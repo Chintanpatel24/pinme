@@ -4,6 +4,71 @@ import { useState, useCallback } from 'react';
 
 const API_BASE = typeof window !== 'undefined' ? window.location.origin : '';
 
+function getRepoList(value) {
+  return value.split(',').map(repo => repo.trim()).filter(Boolean).slice(0, 6);
+}
+
+function getCardUrl(user, repo) {
+  const params = new URLSearchParams({ user, repo });
+  return `${API_BASE}/api/pin?${params.toString()}`;
+}
+
+function getGridUrl(user, repos) {
+  const params = new URLSearchParams({ user });
+  if (repos.length === 1) {
+    params.set('repo', repos[0]);
+  } else {
+    params.set('repos', repos.join(','));
+    params.set('cols', '2');
+  }
+  return `${API_BASE}/api/pin?${params.toString()}`;
+}
+
+function getHtmlEmbed(user, repos) {
+  if (!user || repos.length === 0) return '';
+
+  if (repos.length === 1) {
+    const repo = repos[0];
+    return `<a href="https://github.com/${user}/${repo}">
+  <img src="${getCardUrl(user, repo)}" alt="${user}/${repo}" />
+</a>`;
+  }
+
+  const rows = [];
+  for (let i = 0; i < repos.length; i += 2) {
+    const cells = repos.slice(i, i + 2).map(repo => `    <td>
+      <a href="https://github.com/${user}/${repo}">
+        <img src="${getCardUrl(user, repo)}" alt="${user}/${repo}" />
+      </a>
+    </td>`);
+    rows.push(`  <tr>
+${cells.join('\n')}
+  </tr>`);
+  }
+
+  return `<table>
+${rows.join('\n')}
+</table>`;
+}
+
+function getMarkdownEmbed(user, repos) {
+  if (!user || repos.length === 0) return '';
+
+  const imageLink = repo => `[![${user}/${repo}](${getCardUrl(user, repo)})](https://github.com/${user}/${repo})`;
+  if (repos.length === 1) return imageLink(repos[0]);
+
+  const rows = [];
+  for (let i = 0; i < repos.length; i += 2) {
+    const left = imageLink(repos[i]);
+    const right = repos[i + 1] ? imageLink(repos[i + 1]) : '';
+    rows.push(`| ${left} | ${right} |`);
+  }
+
+  return `| | |
+|---|---|
+${rows.join('\n')}`;
+}
+
 export default function Home() {
   const [user, setUser] = useState('');
   const [repos, setRepos] = useState('');
@@ -11,9 +76,13 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const trimmedUser = user.trim();
+  const repoList = getRepoList(repos);
+  const embedCode = getHtmlEmbed(trimmedUser, repoList);
 
   const generate = useCallback(async () => {
-    if (!user.trim()) {
+    const normalizedUser = user.trim();
+    if (!normalizedUser) {
       setError('Enter a GitHub username.');
       return;
     }
@@ -22,21 +91,17 @@ export default function Home() {
     setSvgUrl('');
     setCopied(false);
 
-    const repoList = repos.split(',').map(r => r.trim()).filter(Boolean);
+    const nextRepoList = getRepoList(repos);
 
     try {
-      const params = new URLSearchParams({ user: user.trim() });
-      if (repoList.length > 0) {
-        params.set('repos', repoList.join(','));
-      } else {
+      if (nextRepoList.length === 0) {
         setError('Enter at least one repository name.');
         setLoading(false);
         return;
       }
-      const url = `${API_BASE}/api/pin?${params.toString()}`;
+      const url = getGridUrl(normalizedUser, nextRepoList);
       const res = await fetch(url);
       if (!res.ok) {
-        const text = await res.text();
         setError('Failed to generate. Check the username and repo names.');
         return;
       }
@@ -49,28 +114,19 @@ export default function Home() {
   }, [user, repos]);
 
   const copyEmbed = useCallback(async () => {
-    if (!svgUrl) return;
-    const repoList = repos.split(',').map(r => r.trim()).filter(Boolean);
-    if (repoList.length === 1) {
-      const embed = `<a href="https://github.com/${user.trim()}/${repoList[0]}">
-  <img src="${svgUrl}" alt="${user.trim()}/${repoList[0]}" />
-</a>`;
-      await navigator.clipboard.writeText(embed);
-    } else {
-      const embed = `<img src="${svgUrl}" alt="GitHub Pinned Repos" />`;
-      await navigator.clipboard.writeText(embed);
-    }
+    if (!svgUrl || !embedCode) return;
+    await navigator.clipboard.writeText(embedCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }, [svgUrl, user, repos]);
+  }, [svgUrl, embedCode]);
 
   const copyMarkdown = useCallback(async () => {
     if (!svgUrl) return;
-    const embed = `[![GitHub Pinned Repos](${svgUrl})](${svgUrl})`;
+    const embed = getMarkdownEmbed(user.trim(), getRepoList(repos));
     await navigator.clipboard.writeText(embed);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }, [svgUrl]);
+  }, [svgUrl, user, repos]);
 
   return (
     <div className="container">
@@ -121,7 +177,7 @@ export default function Home() {
             <h2>Embed</h2>
             <div className="embed-section">
               <p style={{ marginBottom: 8 }}>Copy this into your README:</p>
-              <textarea readOnly value={`<img src="${svgUrl}" alt="GitHub Pinned Repos" />`} />
+              <textarea readOnly value={embedCode} />
               <div className="btn-group">
                 <button className="btn" onClick={copyEmbed}>
                   {copied ? 'Copied!' : 'Copy HTML Embed'}
@@ -131,7 +187,7 @@ export default function Home() {
                 </button>
               </div>
               <p style={{ marginTop: 12, fontSize: 12, color: '#656d76' }}>
-                For single repos, the HTML embed wraps the image in a clickable link.
+                Each card is wrapped in a GitHub link so it stays clickable in README files.
               </p>
             </div>
           </div>
@@ -151,11 +207,11 @@ export default function Home() {
 
         <p style={{ marginTop: 16 }}><strong>Multiple repos (up to 6):</strong></p>
         <pre>GET /api/pin?user=USER&repos=REPO1,REPO2,REPO3</pre>
-        <pre>{'<img src="https://your-domain.vercel.app/api/pin?user=USER&repos=REPO1,REPO2" />'}</pre>
+        <pre>{'<table>\n  <tr>\n    <td>\n      <a href="https://github.com/USER/REPO1">\n        <img src="https://your-domain.vercel.app/api/pin?user=USER&repo=REPO1" />\n      </a>\n    </td>\n    <td>\n      <a href="https://github.com/USER/REPO2">\n        <img src="https://your-domain.vercel.app/api/pin?user=USER&repo=REPO2" />\n      </a>\n    </td>\n  </tr>\n</table>'}</pre>
 
         <p style={{ marginTop: 16 }}><strong>Optional parameters:</strong></p>
         <ul>
-          <li><code>cols</code> — number of columns (default: 3, max: 6)</li>
+          <li><code>cols</code> — number of columns (default: 2, max: 6)</li>
         </ul>
         <pre>GET /api/pin?user=USER&repos=REPO1,REPO2,REPO3,REPO4&cols=2</pre>
       </div>
