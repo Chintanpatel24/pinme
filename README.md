@@ -26,19 +26,6 @@ Each card is **340 × 112px** and includes:
 
 The layout and styling match GitHub's native pinned repos.
 
-## Deploy your own instance
-
-### Local development
-
-```bash
-git clone <your-repo>
-cd pinme
-npm install
-npm run dev
-```
-
-Visit `http://localhost:3000` for the web UI.
-
 ### Environment variables (optional)
 
 Copy `.env.example` to `.env.local` and add a GitHub token for higher rate limits:
@@ -58,21 +45,4 @@ The project is a Next.js 14 app using the App Router. The API route runs on the 
 | Successful response | 1 hour |
 | Error response | 1 minute |
 
-## Project structure
 
-```
-├── app/
-│   ├── api/pin/route.js    # SVG generation endpoint
-│   ├── page.js             # Interactive web UI
-│   ├── layout.js           # Root layout
-│   └── globals.css         # Styles
-├── lib/
-│   ├── github.js           # GitHub API client
-│   ├── svg.js              # SVG rendering engine
-│   └── languages.js        # 300+ language → color mappings
-├── public/
-├── .env.example            # Environment template
-├── next.config.js
-├── package.json
-└── LICENSE
-```
