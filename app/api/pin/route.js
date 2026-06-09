@@ -8,7 +8,8 @@ export async function GET(request) {
   const user = searchParams.get('user');
   const repo = searchParams.get('repo');
   const repos = searchParams.get('repos');
-  const cols = parseInt(searchParams.get('cols') || '3', 10);
+  const requestedCols = parseInt(searchParams.get('cols') || '2', 10);
+  const cols = Number.isNaN(requestedCols) ? 2 : requestedCols;
 
   if (!user) {
     return new Response(generateErrorSVG('Missing "user" parameter. Usage: ?user=owner&repo=name'), {
@@ -32,7 +33,11 @@ export async function GET(request) {
     }
 
     if (repos) {
-      const repoList = repos.split(',').map(r => `${user}/${r.trim()}`).filter(Boolean);
+      const repoList = repos
+        .split(',')
+        .map(r => r.trim())
+        .filter(Boolean)
+        .map(r => `${user}/${r}`);
       if (repoList.length === 0) {
         return new Response(generateErrorSVG('No repos provided. Usage: ?user=owner&repos=repo1,repo2'), {
           headers: {
@@ -50,7 +55,7 @@ export async function GET(request) {
         });
       }
 
-      const { repos: data, errors } = await getMultipleRepos(repoList);
+      const { repos: data } = await getMultipleRepos(repoList);
       const svg = generateGridSVG(data.slice(0, 6), cols);
       return new Response(svg, {
         headers: {
