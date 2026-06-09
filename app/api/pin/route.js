@@ -1,5 +1,5 @@
-import { getRepoData, getMultipleRepos } from '@/lib/github';
-import { generateSingleSVG, generateGridSVG, generateErrorSVG } from '@/lib/svg';
+import { getRepoData, getMultipleRepos } from '../../../lib/github';
+import { generateSingleSVG, generateGridSVG, generateErrorSVG } from '../../../lib/svg';
 
 export const runtime = 'edge';
 
