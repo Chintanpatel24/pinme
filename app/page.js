@@ -144,7 +144,7 @@ export default function Home() {
             type="text"
             value={user}
             onChange={e => setUser(e.target.value)}
-            placeholder="e.g. octocat"
+            placeholder="your github username"
           />
         </div>
         <div className="form-group">
@@ -154,7 +154,7 @@ export default function Home() {
             type="text"
             value={repos}
             onChange={e => setRepos(e.target.value)}
-            placeholder="e.g. hello-world, git-consortium, Spoon-Knife"
+            placeholder="your repo name "
           />
           <div className="hint">Separate multiple repos with commas. Max 6.</div>
         </div>
