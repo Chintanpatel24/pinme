@@ -1,3 +1,7 @@
+<div align=center>
+<img src="assets/pinme.png" width="300">
+</div>
+
 # PinMe
 > Under active devlopment
 
