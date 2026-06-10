@@ -1,7 +1,7 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'PinMe — GitHub Pinned Repo SVG Generator',
+  title: 'PinMe - GitHub Pinned Repo SVG Generator',
   description: 'Generate SVGs that mimic GitHub pinned repositories for your README',
 };
 
