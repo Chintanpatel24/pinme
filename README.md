@@ -2,7 +2,7 @@
 <img src="assets/pinme.png" width="350">
 </div>
 
-# PinMe
+# [PinMe](https://pinme-web.vercel.app/)
 > Under active devlopment
 
 Generate SVG cards that look exactly like **GitHub pinned repositories** — with real-time data from the GitHub API. Embed them in your README to showcase your projects.
