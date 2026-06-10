@@ -1,5 +1,5 @@
 <div align=center>
-<img src="assets/pinme.png" width="300">
+<img src="assets/pinme.png" width="500">
 </div>
 
 # PinMe
