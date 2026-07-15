@@ -8,12 +8,13 @@ function getRepoList(value) {
   return value.split(',').map(repo => repo.trim()).filter(Boolean).slice(0, 6);
 }
 
-function getCardUrl(user, repo) {
+function getCardUrl(user, repo, border) {
   const params = new URLSearchParams({ user, repo });
+  if (border) params.set('border', 'true');
   return `${API_BASE}/api/pin?${params.toString()}`;
 }
 
-function getGridUrl(user, repos) {
+function getGridUrl(user, repos, border) {
   const params = new URLSearchParams({ user });
   if (repos.length === 1) {
     params.set('repo', repos[0]);
@@ -21,10 +22,11 @@ function getGridUrl(user, repos) {
     params.set('repos', repos.join(','));
     params.set('cols', '2');
   }
+  if (border) params.set('border', 'true');
   return `${API_BASE}/api/pin?${params.toString()}`;
 }
 
-function getHtmlEmbed(user, repos) {
+function getHtmlEmbed(user, repos, border) {
   if (!user || repos.length === 0) return '';
 
   if (repos.length === 1) {
@@ -32,7 +34,7 @@ function getHtmlEmbed(user, repos) {
     const fullHref = repo.includes('/') ? `https://github.com/${repo}` : `https://github.com/${user}/${repo}`;
     const altText = repo.includes('/') ? repo : `${user}/${repo}`;
     return `<a href="${fullHref}">
-  <img src="${getCardUrl(user, repo)}" alt="${altText}" />
+  <img src="${getCardUrl(user, repo, border)}" alt="${altText}" />
 </a>`;
   }
 
@@ -43,7 +45,7 @@ function getHtmlEmbed(user, repos) {
       const altText = repo.includes('/') ? repo : `${user}/${repo}`;
       return `    <td>
       <a href="${fullHref}">
-        <img src="${getCardUrl(user, repo)}" alt="${altText}" />
+        <img src="${getCardUrl(user, repo, border)}" alt="${altText}" />
       </a>
     </td>`;
     });
@@ -57,13 +59,13 @@ ${rows.join('\n')}
 </table>`;
 }
 
-function getMarkdownEmbed(user, repos) {
+function getMarkdownEmbed(user, repos, border) {
   if (!user || repos.length === 0) return '';
 
   const imageLink = repo => {
     const fullHref = repo.includes('/') ? `https://github.com/${repo}` : `https://github.com/${user}/${repo}`;
     const altText = repo.includes('/') ? repo : `${user}/${repo}`;
-    return `[![${altText}](${getCardUrl(user, repo)})](${fullHref})`;
+    return `[![${altText}](${getCardUrl(user, repo, border)})](${fullHref})`;
   };
   if (repos.length === 1) return imageLink(repos[0]);
 
@@ -82,8 +84,10 @@ ${rows.join('\n')}`;
 export default function Home() {
   const [user, setUser] = useState('');
   const [repos, setRepos] = useState('');
+  const [border, setBorder] = useState(false);
   const [generatedUser, setGeneratedUser] = useState('');
   const [generatedRepos, setGeneratedRepos] = useState('');
+  const [generatedBorder, setGeneratedBorder] = useState(false);
   const [svgUrl, setSvgUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -91,7 +95,7 @@ export default function Home() {
 
   const trimmedUser = generatedUser.trim();
   const repoList = getRepoList(generatedRepos);
-  const embedCode = getHtmlEmbed(trimmedUser, repoList);
+  const embedCode = getHtmlEmbed(trimmedUser, repoList, generatedBorder);
 
   const generate = useCallback(async () => {
     const normalizedUser = user.trim();
@@ -112,7 +116,7 @@ export default function Home() {
         setLoading(false);
         return;
       }
-      const url = getGridUrl(normalizedUser, nextRepoList);
+      const url = getGridUrl(normalizedUser, nextRepoList, border);
       const res = await fetch(url);
       if (!res.ok) {
         setError('Failed to generate. Check the username and repo names.');
@@ -121,12 +125,13 @@ export default function Home() {
       setSvgUrl(url);
       setGeneratedUser(normalizedUser);
       setGeneratedRepos(repos);
+      setGeneratedBorder(border);
     } catch {
       setError('Network error. Make sure the server is running.');
     } finally {
       setLoading(false);
     }
-  }, [user, repos]);
+  }, [user, repos, border]);
 
   const copyEmbed = useCallback(async () => {
     if (!svgUrl || !embedCode) return;
@@ -137,11 +142,11 @@ export default function Home() {
 
   const copyMarkdown = useCallback(async () => {
     if (!svgUrl) return;
-    const embed = getMarkdownEmbed(generatedUser.trim(), getRepoList(generatedRepos));
+    const embed = getMarkdownEmbed(generatedUser.trim(), getRepoList(generatedRepos), generatedBorder);
     await navigator.clipboard.writeText(embed);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }, [svgUrl, generatedUser, generatedRepos]);
+  }, [svgUrl, generatedUser, generatedRepos, generatedBorder]);
 
   return (
     <div className="container">
@@ -174,6 +179,29 @@ export default function Home() {
             placeholder="next.js, turbo, hyper"
           />
           <div className="hint">Separate multiple repos with commas. Supports full paths like owner/repo. Max 6.</div>
+        </div>
+        <div className="form-group">
+          <label>Card Style</label>
+          <div className="style-options">
+            <label>
+              <input
+                type="radio"
+                name="border"
+                checked={!border}
+                onChange={() => setBorder(false)}
+              />
+              Standard (Clean GitHub Look)
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="border"
+                checked={border}
+                onChange={() => setBorder(true)}
+              />
+              Language Left Border (Color Highlights)
+            </label>
+          </div>
         </div>
         <button className="btn" onClick={generate} disabled={loading}>
           {loading ? 'Generating...' : 'Generate SVG'}
