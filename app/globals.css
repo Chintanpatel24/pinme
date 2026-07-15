@@ -90,7 +90,7 @@ h1 {
   margin-bottom: 6px;
 }
 
-.form-group input {
+.form-group input:not([type="radio"]) {
   width: 100%;
   padding: 10px 14px;
   font-size: 14px;
@@ -102,7 +102,7 @@ h1 {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.form-group input:focus {
+.form-group input:not([type="radio"]):focus {
   border-color: var(--accent-color);
   box-shadow: 0 0 0 3px var(--accent-light);
 }
@@ -111,6 +111,29 @@ h1 {
   font-size: 12px;
   color: var(--text-secondary);
   margin-top: 6px;
+}
+
+.style-options {
+  display: flex;
+  gap: 24px;
+  margin-top: 10px;
+}
+
+.style-options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500 !important;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.style-options input[type="radio"] {
+  width: 18px !important;
+  height: 18px !important;
+  cursor: pointer;
+  accent-color: var(--accent-color);
 }
 
 /* Buttons */
