@@ -10,6 +10,7 @@ export async function GET(request) {
   const repos = searchParams.get('repos');
   const border = searchParams.get('border') === 'true';
   const theme = searchParams.get('theme') || 'light';
+  const showStats = searchParams.get('stats') !== 'false';
   const requestedCols = parseInt(searchParams.get('cols') || '2', 10);
   const cols = Number.isNaN(requestedCols) ? 2 : requestedCols;
 
@@ -26,7 +27,7 @@ export async function GET(request) {
     if (repo) {
       const fullRepoName = repo.includes('/') ? repo : `${user}/${repo}`;
       const data = await getRepoData(fullRepoName);
-      const svg = generateSingleSVG(data, border, theme);
+      const svg = generateSingleSVG(data, border, theme, showStats);
       return new Response(svg, {
         headers: {
           'Content-Type': 'image/svg+xml',
@@ -59,7 +60,7 @@ export async function GET(request) {
       }
 
       const { repos: data } = await getMultipleRepos(repoList);
-      const svg = generateGridSVG(data.slice(0, 6), cols, border, theme);
+      const svg = generateGridSVG(data.slice(0, 6), cols, border, theme, showStats);
       return new Response(svg, {
         headers: {
           'Content-Type': 'image/svg+xml',

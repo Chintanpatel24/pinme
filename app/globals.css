@@ -90,7 +90,7 @@ h1 {
   margin-bottom: 6px;
 }
 
-.form-group input:not([type="radio"]) {
+.form-group input:not([type="radio"]):not([type="checkbox"]) {
   width: 100%;
   padding: 10px 14px;
   font-size: 14px;
@@ -102,9 +102,16 @@ h1 {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.form-group input:not([type="radio"]):focus {
+.form-group input:not([type="radio"]):not([type="checkbox"]):focus {
   border-color: var(--accent-color);
   box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.style-options input[type="checkbox"] {
+  width: 18px !important;
+  height: 18px !important;
+  cursor: pointer;
+  accent-color: var(--accent-color);
 }
 
 .form-group .hint {

@@ -8,14 +8,15 @@ function getRepoList(value) {
   return value.split(',').map(repo => repo.trim()).filter(Boolean).slice(0, 6);
 }
 
-function getCardUrl(user, repo, border, theme) {
+function getCardUrl(user, repo, border, theme, showStats) {
   const params = new URLSearchParams({ user, repo });
   if (border) params.set('border', 'true');
   if (theme && theme !== 'light') params.set('theme', theme);
+  if (!showStats) params.set('stats', 'false');
   return `${API_BASE}/api/pin?${params.toString()}`;
 }
 
-function getGridUrl(user, repos, border, theme) {
+function getGridUrl(user, repos, border, theme, showStats) {
   const params = new URLSearchParams({ user });
   if (repos.length === 1) {
     params.set('repo', repos[0]);
@@ -25,10 +26,11 @@ function getGridUrl(user, repos, border, theme) {
   }
   if (border) params.set('border', 'true');
   if (theme && theme !== 'light') params.set('theme', theme);
+  if (!showStats) params.set('stats', 'false');
   return `${API_BASE}/api/pin?${params.toString()}`;
 }
 
-function getHtmlEmbed(user, repos, border, theme) {
+function getHtmlEmbed(user, repos, border, theme, showStats) {
   if (!user || repos.length === 0) return '';
 
   if (repos.length === 1) {
@@ -36,7 +38,7 @@ function getHtmlEmbed(user, repos, border, theme) {
     const fullHref = repo.includes('/') ? `https://github.com/${repo}` : `https://github.com/${user}/${repo}`;
     const altText = repo.includes('/') ? repo : `${user}/${repo}`;
     return `<a href="${fullHref}">
-  <img src="${getCardUrl(user, repo, border, theme)}" alt="${altText}" />
+  <img src="${getCardUrl(user, repo, border, theme, showStats)}" alt="${altText}" />
 </a>`;
   }
 
@@ -47,7 +49,7 @@ function getHtmlEmbed(user, repos, border, theme) {
       const altText = repo.includes('/') ? repo : `${user}/${repo}`;
       return `    <td>
       <a href="${fullHref}">
-        <img src="${getCardUrl(user, repo, border, theme)}" alt="${altText}" />
+        <img src="${getCardUrl(user, repo, border, theme, showStats)}" alt="${altText}" />
       </a>
     </td>`;
     });
@@ -61,13 +63,13 @@ ${rows.join('\n')}
 </table>`;
 }
 
-function getMarkdownEmbed(user, repos, border, theme) {
+function getMarkdownEmbed(user, repos, border, theme, showStats) {
   if (!user || repos.length === 0) return '';
 
   const imageLink = repo => {
     const fullHref = repo.includes('/') ? `https://github.com/${repo}` : `https://github.com/${user}/${repo}`;
     const altText = repo.includes('/') ? repo : `${user}/${repo}`;
-    return `[![${altText}](${getCardUrl(user, repo, border, theme)})](${fullHref})`;
+    return `[![${altText}](${getCardUrl(user, repo, border, theme, showStats)})](${fullHref})`;
   };
   if (repos.length === 1) return imageLink(repos[0]);
 
@@ -88,10 +90,12 @@ export default function Home() {
   const [repos, setRepos] = useState('');
   const [border, setBorder] = useState(false);
   const [theme, setTheme] = useState('light');
+  const [showStats, setShowStats] = useState(true);
   const [generatedUser, setGeneratedUser] = useState('');
   const [generatedRepos, setGeneratedRepos] = useState('');
   const [generatedBorder, setGeneratedBorder] = useState(false);
   const [generatedTheme, setGeneratedTheme] = useState('light');
+  const [generatedShowStats, setGeneratedShowStats] = useState(true);
   const [svgUrl, setSvgUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -99,7 +103,7 @@ export default function Home() {
 
   const trimmedUser = generatedUser.trim();
   const repoList = getRepoList(generatedRepos);
-  const embedCode = getHtmlEmbed(trimmedUser, repoList, generatedBorder, generatedTheme);
+  const embedCode = getHtmlEmbed(trimmedUser, repoList, generatedBorder, generatedTheme, generatedShowStats);
 
   const generate = useCallback(async () => {
     const normalizedUser = user.trim();
@@ -120,7 +124,7 @@ export default function Home() {
         setLoading(false);
         return;
       }
-      const url = getGridUrl(normalizedUser, nextRepoList, border, theme);
+      const url = getGridUrl(normalizedUser, nextRepoList, border, theme, showStats);
       const res = await fetch(url);
       if (!res.ok) {
         setError('Failed to generate. Check the username and repo names.');
@@ -131,12 +135,13 @@ export default function Home() {
       setGeneratedRepos(repos);
       setGeneratedBorder(border);
       setGeneratedTheme(theme);
+      setGeneratedShowStats(showStats);
     } catch {
       setError('Network error. Make sure the server is running.');
     } finally {
       setLoading(false);
     }
-  }, [user, repos, border, theme]);
+  }, [user, repos, border, theme, showStats]);
 
   const copyEmbed = useCallback(async () => {
     if (!svgUrl || !embedCode) return;
@@ -147,11 +152,17 @@ export default function Home() {
 
   const copyMarkdown = useCallback(async () => {
     if (!svgUrl) return;
-    const embed = getMarkdownEmbed(generatedUser.trim(), getRepoList(generatedRepos), generatedBorder, generatedTheme);
+    const embed = getMarkdownEmbed(
+      generatedUser.trim(),
+      getRepoList(generatedRepos),
+      generatedBorder,
+      generatedTheme,
+      generatedShowStats
+    );
     await navigator.clipboard.writeText(embed);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }, [svgUrl, generatedUser, generatedRepos, generatedBorder, generatedTheme]);
+  }, [svgUrl, generatedUser, generatedRepos, generatedBorder, generatedTheme, generatedShowStats]);
 
   return (
     <div className="container">
@@ -238,6 +249,28 @@ export default function Home() {
               />
               Black (True Dark)
             </label>
+            <label>
+              <input
+                type="radio"
+                name="theme"
+                checked={theme === 'transparent'}
+                onChange={() => setTheme('transparent')}
+              />
+              Transparent (Dark Outline)
+            </label>
+          </div>
+        </div>
+        <div className="form-group">
+          <label>Options</label>
+          <div className="style-options">
+            <label>
+              <input
+                type="checkbox"
+                checked={showStats}
+                onChange={e => setShowStats(e.target.checked)}
+              />
+              Show Stars and Forks
+            </label>
           </div>
         </div>
         <button className="btn" onClick={generate} disabled={loading}>
@@ -294,8 +327,11 @@ export default function Home() {
         <p style={{ marginTop: 16 }}><strong>Optional parameters:</strong></p>
         <ul>
           <li><code>cols</code> — number of columns (default: 2, max: 6)</li>
+          <li><code>border</code> — enable left vertical colored border (<code>true</code>)</li>
+          <li><code>theme</code> — <code>light</code>, <code>dark</code>, <code>black</code>, or <code>transparent</code></li>
+          <li><code>stats</code> — show/hide stars and forks (set to <code>false</code> to hide, default <code>true</code>)</li>
         </ul>
-        <pre>GET /api/pin?user=USER&repos=REPO1,REPO2,REPO3,REPO4&cols=2</pre>
+        <pre>GET /api/pin?user=USER&repos=REPO1,REPO2,REPO3,REPO4&cols=2&theme=transparent&stats=false</pre>
       </div>
 
       <div className="footer">
