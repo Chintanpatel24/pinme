@@ -1,0 +1,12 @@
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+  - Network:      http://0.0.0.0:3000
+
+ ✓ Starting...
+ ✓ Ready in 2.9s
+ ○ Compiling / ...
+ ✓ Compiled / in 4.7s (461 modules)
+ GET / 200 in 5097ms
+ ○ Compiling /api/pin ...
+ ✓ Compiled /api/pin in 1283ms (139 modules)
+ GET /api/pin?user=vercel&repos=next.js%2Cturbo%2Chyper&cols=2&border=true&theme=transparent&stats=false 200 in 1625ms
