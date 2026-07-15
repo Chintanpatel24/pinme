@@ -22,7 +22,8 @@ export async function GET(request) {
 
   try {
     if (repo) {
-      const data = await getRepoData(`${user}/${repo}`);
+      const fullRepoName = repo.includes('/') ? repo : `${user}/${repo}`;
+      const data = await getRepoData(fullRepoName);
       const svg = generateSingleSVG(data);
       return new Response(svg, {
         headers: {
@@ -37,7 +38,7 @@ export async function GET(request) {
         .split(',')
         .map(r => r.trim())
         .filter(Boolean)
-        .map(r => `${user}/${r}`);
+        .map(r => r.includes('/') ? r : `${user}/${r}`);
       if (repoList.length === 0) {
         return new Response(generateErrorSVG('No repos provided. Usage: ?user=owner&repos=repo1,repo2'), {
           headers: {

@@ -29,18 +29,24 @@ function getHtmlEmbed(user, repos) {
 
   if (repos.length === 1) {
     const repo = repos[0];
-    return `<a href="https://github.com/${user}/${repo}">
-  <img src="${getCardUrl(user, repo)}" alt="${user}/${repo}" />
+    const fullHref = repo.includes('/') ? `https://github.com/${repo}` : `https://github.com/${user}/${repo}`;
+    const altText = repo.includes('/') ? repo : `${user}/${repo}`;
+    return `<a href="${fullHref}">
+  <img src="${getCardUrl(user, repo)}" alt="${altText}" />
 </a>`;
   }
 
   const rows = [];
   for (let i = 0; i < repos.length; i += 2) {
-    const cells = repos.slice(i, i + 2).map(repo => `    <td>
-      <a href="https://github.com/${user}/${repo}">
-        <img src="${getCardUrl(user, repo)}" alt="${user}/${repo}" />
+    const cells = repos.slice(i, i + 2).map(repo => {
+      const fullHref = repo.includes('/') ? `https://github.com/${repo}` : `https://github.com/${user}/${repo}`;
+      const altText = repo.includes('/') ? repo : `${user}/${repo}`;
+      return `    <td>
+      <a href="${fullHref}">
+        <img src="${getCardUrl(user, repo)}" alt="${altText}" />
       </a>
-    </td>`);
+    </td>`;
+    });
     rows.push(`  <tr>
 ${cells.join('\n')}
   </tr>`);
@@ -54,7 +60,11 @@ ${rows.join('\n')}
 function getMarkdownEmbed(user, repos) {
   if (!user || repos.length === 0) return '';
 
-  const imageLink = repo => `[![${user}/${repo}](${getCardUrl(user, repo)})](https://github.com/${user}/${repo})`;
+  const imageLink = repo => {
+    const fullHref = repo.includes('/') ? `https://github.com/${repo}` : `https://github.com/${user}/${repo}`;
+    const altText = repo.includes('/') ? repo : `${user}/${repo}`;
+    return `[![${altText}](${getCardUrl(user, repo)})](${fullHref})`;
+  };
   if (repos.length === 1) return imageLink(repos[0]);
 
   const rows = [];
@@ -72,12 +82,15 @@ ${rows.join('\n')}`;
 export default function Home() {
   const [user, setUser] = useState('');
   const [repos, setRepos] = useState('');
+  const [generatedUser, setGeneratedUser] = useState('');
+  const [generatedRepos, setGeneratedRepos] = useState('');
   const [svgUrl, setSvgUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
-  const trimmedUser = user.trim();
-  const repoList = getRepoList(repos);
+
+  const trimmedUser = generatedUser.trim();
+  const repoList = getRepoList(generatedRepos);
   const embedCode = getHtmlEmbed(trimmedUser, repoList);
 
   const generate = useCallback(async () => {
@@ -106,6 +119,8 @@ export default function Home() {
         return;
       }
       setSvgUrl(url);
+      setGeneratedUser(normalizedUser);
+      setGeneratedRepos(repos);
     } catch {
       setError('Network error. Make sure the server is running.');
     } finally {
@@ -122,18 +137,20 @@ export default function Home() {
 
   const copyMarkdown = useCallback(async () => {
     if (!svgUrl) return;
-    const embed = getMarkdownEmbed(user.trim(), getRepoList(repos));
+    const embed = getMarkdownEmbed(generatedUser.trim(), getRepoList(generatedRepos));
     await navigator.clipboard.writeText(embed);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }, [svgUrl, user, repos]);
+  }, [svgUrl, generatedUser, generatedRepos]);
 
   return (
     <div className="container">
-      <h1>PinMe</h1>
-      <p className="subtitle">
-        Generate GitHub pinned repo SVGs for your README.
-      </p>
+      <div className="header-section">
+        <h1>PinMe</h1>
+        <p className="subtitle">
+          Generate elegant SVG cards of your pinned repositories with real-time GitHub data.
+        </p>
+      </div>
 
       <div className="card">
         <h2>Generate</h2>
@@ -144,7 +161,7 @@ export default function Home() {
             type="text"
             value={user}
             onChange={e => setUser(e.target.value)}
-            placeholder="your github username"
+            placeholder="vercel"
           />
         </div>
         <div className="form-group">
@@ -154,9 +171,9 @@ export default function Home() {
             type="text"
             value={repos}
             onChange={e => setRepos(e.target.value)}
-            placeholder="your repo name "
+            placeholder="next.js, turbo, hyper"
           />
-          <div className="hint">Separate multiple repos with commas. Max 6.</div>
+          <div className="hint">Separate multiple repos with commas. Supports full paths like owner/repo. Max 6.</div>
         </div>
         <button className="btn" onClick={generate} disabled={loading}>
           {loading ? 'Generating...' : 'Generate SVG'}
