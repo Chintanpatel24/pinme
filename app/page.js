@@ -8,13 +8,14 @@ function getRepoList(value) {
   return value.split(',').map(repo => repo.trim()).filter(Boolean).slice(0, 6);
 }
 
-function getCardUrl(user, repo, border) {
+function getCardUrl(user, repo, border, theme) {
   const params = new URLSearchParams({ user, repo });
   if (border) params.set('border', 'true');
+  if (theme && theme !== 'light') params.set('theme', theme);
   return `${API_BASE}/api/pin?${params.toString()}`;
 }
 
-function getGridUrl(user, repos, border) {
+function getGridUrl(user, repos, border, theme) {
   const params = new URLSearchParams({ user });
   if (repos.length === 1) {
     params.set('repo', repos[0]);
@@ -23,10 +24,11 @@ function getGridUrl(user, repos, border) {
     params.set('cols', '2');
   }
   if (border) params.set('border', 'true');
+  if (theme && theme !== 'light') params.set('theme', theme);
   return `${API_BASE}/api/pin?${params.toString()}`;
 }
 
-function getHtmlEmbed(user, repos, border) {
+function getHtmlEmbed(user, repos, border, theme) {
   if (!user || repos.length === 0) return '';
 
   if (repos.length === 1) {
@@ -34,7 +36,7 @@ function getHtmlEmbed(user, repos, border) {
     const fullHref = repo.includes('/') ? `https://github.com/${repo}` : `https://github.com/${user}/${repo}`;
     const altText = repo.includes('/') ? repo : `${user}/${repo}`;
     return `<a href="${fullHref}">
-  <img src="${getCardUrl(user, repo, border)}" alt="${altText}" />
+  <img src="${getCardUrl(user, repo, border, theme)}" alt="${altText}" />
 </a>`;
   }
 
@@ -45,7 +47,7 @@ function getHtmlEmbed(user, repos, border) {
       const altText = repo.includes('/') ? repo : `${user}/${repo}`;
       return `    <td>
       <a href="${fullHref}">
-        <img src="${getCardUrl(user, repo, border)}" alt="${altText}" />
+        <img src="${getCardUrl(user, repo, border, theme)}" alt="${altText}" />
       </a>
     </td>`;
     });
@@ -59,13 +61,13 @@ ${rows.join('\n')}
 </table>`;
 }
 
-function getMarkdownEmbed(user, repos, border) {
+function getMarkdownEmbed(user, repos, border, theme) {
   if (!user || repos.length === 0) return '';
 
   const imageLink = repo => {
     const fullHref = repo.includes('/') ? `https://github.com/${repo}` : `https://github.com/${user}/${repo}`;
     const altText = repo.includes('/') ? repo : `${user}/${repo}`;
-    return `[![${altText}](${getCardUrl(user, repo, border)})](${fullHref})`;
+    return `[![${altText}](${getCardUrl(user, repo, border, theme)})](${fullHref})`;
   };
   if (repos.length === 1) return imageLink(repos[0]);
 
@@ -85,9 +87,11 @@ export default function Home() {
   const [user, setUser] = useState('');
   const [repos, setRepos] = useState('');
   const [border, setBorder] = useState(false);
+  const [theme, setTheme] = useState('light');
   const [generatedUser, setGeneratedUser] = useState('');
   const [generatedRepos, setGeneratedRepos] = useState('');
   const [generatedBorder, setGeneratedBorder] = useState(false);
+  const [generatedTheme, setGeneratedTheme] = useState('light');
   const [svgUrl, setSvgUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -95,7 +99,7 @@ export default function Home() {
 
   const trimmedUser = generatedUser.trim();
   const repoList = getRepoList(generatedRepos);
-  const embedCode = getHtmlEmbed(trimmedUser, repoList, generatedBorder);
+  const embedCode = getHtmlEmbed(trimmedUser, repoList, generatedBorder, generatedTheme);
 
   const generate = useCallback(async () => {
     const normalizedUser = user.trim();
@@ -116,7 +120,7 @@ export default function Home() {
         setLoading(false);
         return;
       }
-      const url = getGridUrl(normalizedUser, nextRepoList, border);
+      const url = getGridUrl(normalizedUser, nextRepoList, border, theme);
       const res = await fetch(url);
       if (!res.ok) {
         setError('Failed to generate. Check the username and repo names.');
@@ -126,12 +130,13 @@ export default function Home() {
       setGeneratedUser(normalizedUser);
       setGeneratedRepos(repos);
       setGeneratedBorder(border);
+      setGeneratedTheme(theme);
     } catch {
       setError('Network error. Make sure the server is running.');
     } finally {
       setLoading(false);
     }
-  }, [user, repos, border]);
+  }, [user, repos, border, theme]);
 
   const copyEmbed = useCallback(async () => {
     if (!svgUrl || !embedCode) return;
@@ -142,11 +147,11 @@ export default function Home() {
 
   const copyMarkdown = useCallback(async () => {
     if (!svgUrl) return;
-    const embed = getMarkdownEmbed(generatedUser.trim(), getRepoList(generatedRepos), generatedBorder);
+    const embed = getMarkdownEmbed(generatedUser.trim(), getRepoList(generatedRepos), generatedBorder, generatedTheme);
     await navigator.clipboard.writeText(embed);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }, [svgUrl, generatedUser, generatedRepos, generatedBorder]);
+  }, [svgUrl, generatedUser, generatedRepos, generatedBorder, generatedTheme]);
 
   return (
     <div className="container">
@@ -200,6 +205,38 @@ export default function Home() {
                 onChange={() => setBorder(true)}
               />
               Language Left Border (Color Highlights)
+            </label>
+          </div>
+        </div>
+        <div className="form-group">
+          <label>Theme</label>
+          <div className="style-options">
+            <label>
+              <input
+                type="radio"
+                name="theme"
+                checked={theme === 'light'}
+                onChange={() => setTheme('light')}
+              />
+              Light (Default)
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="theme"
+                checked={theme === 'dark'}
+                onChange={() => setTheme('dark')}
+              />
+              Dark (GitHub Style)
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="theme"
+                checked={theme === 'black'}
+                onChange={() => setTheme('black')}
+              />
+              Black (True Dark)
             </label>
           </div>
         </div>
