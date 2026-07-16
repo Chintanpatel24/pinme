@@ -283,7 +283,14 @@ export default function Home() {
         <>
           <div className="card">
             <h2>Preview</h2>
-            <div className="preview">
+            <div
+              className="preview"
+              style={
+                generatedTheme === 'transparent'
+                  ? { backgroundColor: '#0d1117', borderColor: '#30363d' }
+                  : {}
+              }
+            >
               <img src={svgUrl} alt="Generated pinned repos preview" />
             </div>
           </div>

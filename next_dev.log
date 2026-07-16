@@ -15,3 +15,7 @@
  GET / 200 in 146ms
  ✓ Compiled /api/pin in 295ms (139 modules)
  GET /api/pin?user=vercel&repos=next.js%2Cturbo%2Chyper&cols=2&border=true&theme=transparent 200 in 512ms
+ ✓ Compiled in 3.5s (447 modules)
+ GET / 200 in 136ms
+ GET /api/pin?user=vercel&repos=next.js%2Cturbo%2Chyper&cols=2 200 in 175ms
+ GET /api/pin?user=vercel&repos=next.js%2Cturbo%2Chyper&cols=2&theme=transparent 200 in 19ms
