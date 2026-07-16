@@ -256,7 +256,7 @@ export default function Home() {
                 checked={theme === 'transparent'}
                 onChange={() => setTheme('transparent')}
               />
-              Transparent (Dark Outline)
+              Transparent (Off-White Outline)
             </label>
           </div>
         </div>

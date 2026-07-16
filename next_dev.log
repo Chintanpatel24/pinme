@@ -10,3 +10,8 @@
  ○ Compiling /api/pin ...
  ✓ Compiled /api/pin in 1283ms (139 modules)
  GET /api/pin?user=vercel&repos=next.js%2Cturbo%2Chyper&cols=2&border=true&theme=transparent&stats=false 200 in 1625ms
+ ✓ Compiled in 313ms
+ ✓ Compiled in 2.4s (447 modules)
+ GET / 200 in 146ms
+ ✓ Compiled /api/pin in 295ms (139 modules)
+ GET /api/pin?user=vercel&repos=next.js%2Cturbo%2Chyper&cols=2&border=true&theme=transparent 200 in 512ms
