@@ -258,6 +258,15 @@ export default function Home() {
               />
               Transparent (Off-White Outline)
             </label>
+            <label>
+              <input
+                type="radio"
+                name="theme"
+                checked={theme === 'transparent-light'}
+                onChange={() => setTheme('transparent-light')}
+              />
+              Transparent (Dark Outline)
+            </label>
           </div>
         </div>
         <div className="form-group">
@@ -335,7 +344,7 @@ export default function Home() {
         <ul>
           <li><code>cols</code> — number of columns (default: 2, max: 6)</li>
           <li><code>border</code> — enable left vertical colored border (<code>true</code>)</li>
-          <li><code>theme</code> — <code>light</code>, <code>dark</code>, <code>black</code>, or <code>transparent</code></li>
+          <li><code>theme</code> — <code>light</code>, <code>dark</code>, <code>black</code>, <code>transparent</code>, or <code>transparent-light</code></li>
           <li><code>stats</code> — show/hide stars and forks (set to <code>false</code> to hide, default <code>true</code>)</li>
         </ul>
         <pre>GET /api/pin?user=USER&repos=REPO1,REPO2,REPO3,REPO4&cols=2&theme=transparent&stats=false</pre>
@@ -343,8 +352,7 @@ export default function Home() {
 
       <div className="footer">
         <p>
-          Built with Next.js —{' '}
-          <a href="https://github.com/your-username/pinme" target="_blank" rel="noopener noreferrer">Source</a>
+          <a href="https://github.com/Chintanpatel24/pinme" target="_blank" rel="noopener noreferrer">sourcecode</a>
         </p>
       </div>
     </div>
