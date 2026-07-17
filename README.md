@@ -9,7 +9,7 @@
 
 
 >[!TIP]
->Generate a card with 440 px width for the best look.
+>Generate a card with 421 px width for the best look.
 
 <details>
  <summary> Optional: columns </summary>
