@@ -20,6 +20,17 @@ export async function GET(request) {
   const heightVal = parseInt(searchParams.get('height') || '112', 10);
   const height = Number.isNaN(heightVal) ? 112 : heightVal;
 
+  const rxVal = parseInt(searchParams.get('rx') || '6', 10);
+  const rx = Number.isNaN(rxVal) ? 6 : rxVal;
+
+  const showSize = searchParams.get('show_size') === 'true';
+  const showLicense = searchParams.get('show_license') === 'true';
+  const showIssues = searchParams.get('show_issues') === 'true';
+
+  const customBg = searchParams.get('custom_bg') || '';
+  const customTitle = searchParams.get('custom_title') || '';
+  const customText = searchParams.get('custom_text') || '';
+
   if (!user) {
     return new Response(generateErrorSVG('Missing "user" parameter. Usage: ?user=owner&repo=name'), {
       headers: {
@@ -33,11 +44,11 @@ export async function GET(request) {
     if (repo) {
       const fullRepoName = repo.includes('/') ? repo : `${user}/${repo}`;
       const data = await getRepoData(fullRepoName);
-      const svg = generateSingleSVG(data, border, theme, showStats, width, height);
+      const svg = generateSingleSVG(data, border, theme, showStats, width, height, rx, showSize, showLicense, showIssues, customBg, customTitle, customText);
       return new Response(svg, {
         headers: {
           'Content-Type': 'image/svg+xml',
-          'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+          'Cache-Control': 'public, max-age=1800, s-maxage=1800',
         },
       });
     }
@@ -66,11 +77,11 @@ export async function GET(request) {
       }
 
       const { repos: data } = await getMultipleRepos(repoList);
-      const svg = generateGridSVG(data.slice(0, 6), cols, border, theme, showStats, width, height);
+      const svg = generateGridSVG(data.slice(0, 6), cols, border, theme, showStats, width, height, rx, showSize, showLicense, showIssues, customBg, customTitle, customText);
       return new Response(svg, {
         headers: {
           'Content-Type': 'image/svg+xml',
-          'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+          'Cache-Control': 'public, max-age=1800, s-maxage=1800',
         },
       });
     }
