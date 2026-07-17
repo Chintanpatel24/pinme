@@ -299,7 +299,7 @@ export default function Home() {
             type="text"
             value={user}
             onChange={e => setUser(e.target.value)}
-            placeholder="vercel"
+            placeholder="Githun username"
           />
         </div>
         <div className="form-group">
@@ -309,7 +309,7 @@ export default function Home() {
             type="text"
             value={repos}
             onChange={e => setRepos(e.target.value)}
-            placeholder="next.js, turborepo"
+            placeholder="Repository name"
           />
           <div className="hint">Separate multiple repos with commas. Supports full paths like owner/repo. Max 6.</div>
         </div>

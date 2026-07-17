@@ -3,11 +3,16 @@
 </div>
 
 # [PinMe](https://pinme-web.vercel.app/)
-> Under active devlopment
+- Generate SVG cards that look exactly like **GitHub pinned repositories** - with real-time data from the GitHub API. Embed them in your README to showcase your projects.
+ <a href="https://pinme-web.vercel.app/">
+<img width="926" height="398" alt="pinme" src="https://github.com/user-attachments/assets/4a62e61b-471b-4538-9d9b-1c46bbdd39c1" />
 
-Generate SVG cards that look exactly like **GitHub pinned repositories** — with real-time data from the GitHub API. Embed them in your README to showcase your projects.
 
-### Optional: columns
+>[!TIP]
+>Generate a card with 421 px width for the best look.
+
+<details>
+ <summary> Optional: columns </summary>
 
 ```
 GET /api/pin?user=vercel&repos=next.js,turbo,hyper&cols=3
