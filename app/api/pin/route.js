@@ -26,6 +26,10 @@ export async function GET(request) {
   const showSize = searchParams.get('show_size') === 'true';
   const showLicense = searchParams.get('show_license') === 'true';
   const showIssues = searchParams.get('show_issues') === 'true';
+  const showTopics = searchParams.get('show_topics') === 'true';
+  const showWatchers = searchParams.get('show_watchers') === 'true';
+  const showUpdated = searchParams.get('show_updated') === 'true';
+  const showBadges = searchParams.get('show_badges') === 'true';
 
   const customBg = searchParams.get('custom_bg') || '';
   const customTitle = searchParams.get('custom_title') || '';
@@ -44,7 +48,7 @@ export async function GET(request) {
     if (repo) {
       const fullRepoName = repo.includes('/') ? repo : `${user}/${repo}`;
       const data = await getRepoData(fullRepoName);
-      const svg = generateSingleSVG(data, border, theme, showStats, width, height, rx, showSize, showLicense, showIssues, customBg, customTitle, customText);
+      const svg = generateSingleSVG(data, border, theme, showStats, width, height, rx, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges);
       return new Response(svg, {
         headers: {
           'Content-Type': 'image/svg+xml',
@@ -77,7 +81,7 @@ export async function GET(request) {
       }
 
       const { repos: data } = await getMultipleRepos(repoList);
-      const svg = generateGridSVG(data.slice(0, 6), cols, border, theme, showStats, width, height, rx, showSize, showLicense, showIssues, customBg, customTitle, customText);
+      const svg = generateGridSVG(data.slice(0, 6), cols, border, theme, showStats, width, height, rx, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges);
       return new Response(svg, {
         headers: {
           'Content-Type': 'image/svg+xml',
