@@ -22,7 +22,8 @@ Generate elegant SVG cards that look exactly like **GitHub pinned repositories**
 ---
 
 ## Direct Usage
-- visit website to genrate yours - pinme
+- visit website to genrate yours - [Pinme](https://pinme-web.vercel.app)
+  
 ### Single Repository
 ```
 GET /api/pin?user=owner&repo=repo_name
