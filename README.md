@@ -1,57 +1,81 @@
-<div align=center>
-<img src="assets/pinme.png" width="350">
+# PinMe
+
+Generate elegant SVG cards that look exactly like **GitHub pinned repositories** with real-time data from the GitHub API. Embed them in your README to showcase your projects with working repo links!
+
+<div align="center">
+  <img src="assets/pinme.png" width="350" alt="PinMe logo">
 </div>
 
-# [PinMe](https://pinme-web.vercel.app/)
-- Generate SVG cards that look exactly like **GitHub pinned repositories** - with real-time data from the GitHub API. Embed them in your README to showcase your projects, with working repo link
- <a href="https://pinme-web.vercel.app/">
-<img width="926" height="398" alt="pinme" src="https://github.com/user-attachments/assets/4a62e61b-471b-4538-9d9b-1c46bbdd39c1" />
+---
 
+## Features
 
->[!TIP]
->Generate a card with 421 px width for the best look.
+- **GitHub Pinned Look & Feel:** Perfect dimensions, typography, and theme modes (`light`, `dark`, `black`, `transparent`, and `transparent-light`).
+- **Dynamic Languages Track:** Beautiful, horizontal progress-bar styled language distribution segmenting (top 5 languages with color dots + customizable percentages).
+- **Advanced Customization:** Fully customize width, height, border radius, backgrounds, linear gradients, title colors, text/icon colors, and status metadata badges.
+- **Ultra Scalable & Resilient:**
+  - Cap-eviction safe in-memory caching to completely prevent memory leaks.
+  - Comma-separated dynamic dynamic GitHub API token rotation & load balancing.
+  - Stale-while-revalidate background updating with rate-limiting failover.
+  - Multi-tier edge and client-side CDN caching.
 
-<details>
- <summary> Optional: columns </summary>
+---
 
+## Direct Usage
+
+### Single Repository
 ```
-GET /api/pin?user=vercel&repos=next.js,turbo,hyper&cols=3
+GET /api/pin?user=owner&repo=repo_name
 ```
+
+```html
+<a href="https://github.com/owner/repo_name">
+  <img src="https://your-domain.vercel.app/api/pin?user=owner&repo=repo_name" alt="Pinned Repo Card" />
+</a>
+```
+
+### Multiple Repositories (Up to 6)
+```
+GET /api/pin?user=owner&repos=repo1,repo2,repo3&cols=3
+```
+
+---
+
+## Customization Parameters
 
 | Param | Default | Description |
 |---|---|---|
-| `cols` | `3` | Number of columns in the grid (1–6) |
+| `user` | *Required* | The GitHub owner/username. |
+| `repo` / `repos` | *Required* | Single repository name or comma-separated list of up to 6 repositories. |
+| `cols` | `2` | Number of grid columns for multi-repo display (1-6). |
+| `theme` | `light` | Theme to render: `light`, `dark`, `black`, `transparent`, or `transparent-light`. |
+| `width` | `340` | Custom card width in pixels (min: 200, max: 1000). |
+| `height` | `112` (`140` if `show_langs` active) | Custom card height in pixels (min: 70, max: 500). |
+| `rx` | `6` | Custom card border radius in pixels (min: 0, max: 40). |
+| `border` | `false` | Enable language-colored left vertical highlighted border strip. |
+| `show_langs` | `false` | Enable a comprehensive visual horizontal languages track. |
+| `langs_percentage` | `false` | Append numerical percentage values next to each track language label. |
+| `stats` | `true` | Display counts for stars and forks. |
+| `show_size` | `false` | Display total compiled repository size metadata. |
+| `show_license` | `false` | Display SPDX license metadata info. |
+| `show_issues` | `false` | Display open issues count metadata. |
+| `show_watchers` | `false` | Display watcher/subscriber counts. |
+| `show_topics` | `false` | Display repository topics / tags. |
+| `show_updated` | `false` | Display last pushed or updated timestamp. |
+| `show_badges` | `false` | Display dynamic status badges (e.g. `Archived`, `Template`, `Fork`). |
+| `custom_bg` | `""` | Customize background color or linear-gradient stops (e.g. `linear-gradient(#000,#21262d)`). |
+| `custom_title` | `""` | Custom HEX color for the repository link title. |
+| `custom_text` | `""` | Custom HEX color for description text and icons. |
 
-## Card preview
+---
 
-Each card is **340 × 112px** and includes:
+## Self-Hosting & Scalability
 
-- Repository name (owner/repo, blue link)
-- Description (up to 2 lines, truncated)
-- Language dot with color
-- Star count
-- Fork count
-- Clickable — opens the repo on GitHub
+PinMe can be deployed on Vercel / Next.js Edge Runtime in single clicks.
 
-The layout and styling match GitHub's native pinned repos.
+### Dynamic Token Rotation
+To multi-fold your rate limits (up to 5,000 requests/hour per token), PinMe rotates automatically over multiple API keys. Add them as a comma-separated list in your environment variables:
 
-### Environment variables (optional)
-
-Copy `.env.example` to `.env.local` and add a GitHub token for higher rate limits:
-
+```env
+GITHUB_TOKEN=ghp_firstToken,ghp_secondToken,ghp_thirdToken
 ```
-GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
-```
-
-Without a token, the GitHub API allows **60 requests per hour**. With a token, you get **5,000 requests per hour**. Create a token at https://github.com/settings/tokens (no scopes needed for public repos).
-
-## Self-hosting notes
-
-The project is a Next.js 14 app using the App Router. The API route runs on the Edge runtime for fast responses. All caching is handled via `Cache-Control` headers:
-
-| Scenario | Cache duration |
-|---|---|
-| Successful response | 1 hour |
-| Error response | 1 minute |
-
-
