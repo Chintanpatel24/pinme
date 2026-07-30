@@ -17,8 +17,13 @@ export async function GET(request) {
   const widthVal = parseInt(searchParams.get('width') || '340', 10);
   const width = Number.isNaN(widthVal) ? 340 : widthVal;
 
-  const heightVal = parseInt(searchParams.get('height') || '112', 10);
-  const height = Number.isNaN(heightVal) ? 112 : heightVal;
+  const showLangs = searchParams.get('show_langs') === 'true';
+  const langsPercentage = searchParams.get('langs_percentage') === 'true';
+
+  // Automatically increase height if languages track is shown and height is not explicitly custom.
+  const defaultHeight = showLangs ? 140 : 112;
+  const heightVal = parseInt(searchParams.get('height') || String(defaultHeight), 10);
+  const height = Number.isNaN(heightVal) ? defaultHeight : heightVal;
 
   const rxVal = parseInt(searchParams.get('rx') || '6', 10);
   const rx = Number.isNaN(rxVal) ? 6 : rxVal;
@@ -47,12 +52,12 @@ export async function GET(request) {
   try {
     if (repo) {
       const fullRepoName = repo.includes('/') ? repo : `${user}/${repo}`;
-      const data = await getRepoData(fullRepoName);
-      const svg = generateSingleSVG(data, border, theme, showStats, width, height, rx, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges);
+      const data = await getRepoData(fullRepoName, showLangs);
+      const svg = generateSingleSVG(data, border, theme, showStats, width, height, rx, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage);
       return new Response(svg, {
         headers: {
           'Content-Type': 'image/svg+xml',
-          'Cache-Control': 'public, max-age=1800, s-maxage=1800',
+          'Cache-Control': 'public, max-age=1800, s-maxage=1800, stale-while-revalidate=86400',
         },
       });
     }
@@ -80,12 +85,12 @@ export async function GET(request) {
         });
       }
 
-      const { repos: data } = await getMultipleRepos(repoList);
-      const svg = generateGridSVG(data.slice(0, 6), cols, border, theme, showStats, width, height, rx, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges);
+      const { repos: data } = await getMultipleRepos(repoList, showLangs);
+      const svg = generateGridSVG(data.slice(0, 6), cols, border, theme, showStats, width, height, rx, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage);
       return new Response(svg, {
         headers: {
           'Content-Type': 'image/svg+xml',
-          'Cache-Control': 'public, max-age=1800, s-maxage=1800',
+          'Cache-Control': 'public, max-age=1800, s-maxage=1800, stale-while-revalidate=86400',
         },
       });
     }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 const API_BASE = typeof window !== 'undefined' ? window.location.origin : '';
 
@@ -8,13 +8,14 @@ function getRepoList(value) {
   return value.split(',').map(repo => repo.trim()).filter(Boolean).slice(0, 6);
 }
 
-function getCardUrl(user, repo, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges) {
+function getCardUrl(user, repo, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage) {
   const params = new URLSearchParams({ user, repo });
   if (border) params.set('border', 'true');
   if (theme && theme !== 'light') params.set('theme', theme);
   if (!showStats) params.set('stats', 'false');
   if (width && width !== '340') params.set('width', width);
-  if (height && height !== '112') params.set('height', height);
+  const defaultHeight = showLangs ? '140' : '112';
+  if (height && height !== defaultHeight) params.set('height', height);
   if (rx && rx !== '6') params.set('rx', rx);
   if (showSize) params.set('show_size', 'true');
   if (showLicense) params.set('show_license', 'true');
@@ -23,13 +24,15 @@ function getCardUrl(user, repo, border, theme, showStats, width, height, rx, col
   if (showWatchers) params.set('show_watchers', 'true');
   if (showUpdated) params.set('show_updated', 'true');
   if (showBadges) params.set('show_badges', 'true');
+  if (showLangs) params.set('show_langs', 'true');
+  if (langsPercentage) params.set('langs_percentage', 'true');
   if (customBg) params.set('custom_bg', customBg);
   if (customTitle) params.set('custom_title', customTitle);
   if (customText) params.set('custom_text', customText);
   return `${API_BASE}/api/pin?${params.toString()}`;
 }
 
-function getGridUrl(user, repos, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges) {
+function getGridUrl(user, repos, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage) {
   const params = new URLSearchParams({ user });
   if (repos.length === 1) {
     params.set('repo', repos[0]);
@@ -41,7 +44,8 @@ function getGridUrl(user, repos, border, theme, showStats, width, height, rx, co
   if (theme && theme !== 'light') params.set('theme', theme);
   if (!showStats) params.set('stats', 'false');
   if (width && width !== '340') params.set('width', width);
-  if (height && height !== '112') params.set('height', height);
+  const defaultHeight = showLangs ? '140' : '112';
+  if (height && height !== defaultHeight) params.set('height', height);
   if (rx && rx !== '6') params.set('rx', rx);
   if (showSize) params.set('show_size', 'true');
   if (showLicense) params.set('show_license', 'true');
@@ -50,13 +54,15 @@ function getGridUrl(user, repos, border, theme, showStats, width, height, rx, co
   if (showWatchers) params.set('show_watchers', 'true');
   if (showUpdated) params.set('show_updated', 'true');
   if (showBadges) params.set('show_badges', 'true');
+  if (showLangs) params.set('show_langs', 'true');
+  if (langsPercentage) params.set('langs_percentage', 'true');
   if (customBg) params.set('custom_bg', customBg);
   if (customTitle) params.set('custom_title', customTitle);
   if (customText) params.set('custom_text', customText);
   return `${API_BASE}/api/pin?${params.toString()}`;
 }
 
-function getHtmlEmbed(user, repos, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges) {
+function getHtmlEmbed(user, repos, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage) {
   if (!user || repos.length === 0) return '';
 
   if (repos.length === 1) {
@@ -64,7 +70,7 @@ function getHtmlEmbed(user, repos, border, theme, showStats, width, height, rx, 
     const fullHref = repo.includes('/') ? `https://github.com/${repo}` : `https://github.com/${user}/${repo}`;
     const altText = repo.includes('/') ? repo : `${user}/${repo}`;
     return `<a href="${fullHref}">
-  <img src="${getCardUrl(user, repo, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges)}" alt="${altText}" />
+  <img src="${getCardUrl(user, repo, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage)}" alt="${altText}" />
 </a>`;
   }
 
@@ -76,7 +82,7 @@ function getHtmlEmbed(user, repos, border, theme, showStats, width, height, rx, 
       const altText = repo.includes('/') ? repo : `${user}/${repo}`;
       return `    <td>
       <a href="${fullHref}">
-        <img src="${getCardUrl(user, repo, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges)}" alt="${altText}" />
+        <img src="${getCardUrl(user, repo, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage)}" alt="${altText}" />
       </a>
     </td>`;
     });
@@ -88,13 +94,13 @@ ${rows.join('\n')}
 </table>`;
 }
 
-function getMarkdownEmbed(user, repos, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges) {
+function getMarkdownEmbed(user, repos, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage) {
   if (!user || repos.length === 0) return '';
 
   const imageLink = repo => {
     const fullHref = repo.includes('/') ? `https://github.com/${repo}` : `https://github.com/${user}/${repo}`;
     const altText = repo.includes('/') ? repo : `${user}/${repo}`;
-    return `[![${altText}](${getCardUrl(user, repo, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges)})](${fullHref})`;
+    return `[![${altText}](${getCardUrl(user, repo, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage)})](${fullHref})`;
   };
   if (repos.length === 1) return imageLink(repos[0]);
 
@@ -134,6 +140,8 @@ export default function Home() {
   const [showWatchers, setShowWatchers] = useState(false);
   const [showUpdated, setShowUpdated] = useState(false);
   const [showBadges, setShowBadges] = useState(false);
+  const [showLangs, setShowLangs] = useState(false);
+  const [langsPercentage, setLangsPercentage] = useState(false);
 
   const [customBg, setCustomBg] = useState('');
   const [customTitle, setCustomTitle] = useState('');
@@ -155,6 +163,8 @@ export default function Home() {
   const [generatedShowWatchers, setGeneratedShowWatchers] = useState(false);
   const [generatedShowUpdated, setGeneratedShowUpdated] = useState(false);
   const [generatedShowBadges, setGeneratedShowBadges] = useState(false);
+  const [generatedShowLangs, setGeneratedShowLangs] = useState(false);
+  const [generatedLangsPercentage, setGeneratedLangsPercentage] = useState(false);
 
   const [generatedCustomBg, setGeneratedCustomBg] = useState('');
   const [generatedCustomTitle, setGeneratedCustomTitle] = useState('');
@@ -164,6 +174,15 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+
+  // Automatically adjust default height state when languages track is toggled
+  useEffect(() => {
+    if (showLangs && height === '112') {
+      setHeight('140');
+    } else if (!showLangs && height === '140') {
+      setHeight('112');
+    }
+  }, [showLangs, height]);
 
   const trimmedUser = generatedUser.trim();
   const repoList = getRepoList(generatedRepos);
@@ -186,7 +205,9 @@ export default function Home() {
     generatedShowTopics,
     generatedShowWatchers,
     generatedShowUpdated,
-    generatedShowBadges
+    generatedShowBadges,
+    generatedShowLangs,
+    generatedLangsPercentage
   );
 
   const generate = useCallback(async () => {
@@ -227,7 +248,9 @@ export default function Home() {
         showTopics,
         showWatchers,
         showUpdated,
-        showBadges
+        showBadges,
+        showLangs,
+        langsPercentage
       );
       const res = await fetch(url);
       if (!res.ok) {
@@ -251,6 +274,8 @@ export default function Home() {
       setGeneratedShowWatchers(showWatchers);
       setGeneratedShowUpdated(showUpdated);
       setGeneratedShowBadges(showBadges);
+      setGeneratedShowLangs(showLangs);
+      setGeneratedLangsPercentage(langsPercentage);
       setGeneratedCustomBg(customBg);
       setGeneratedCustomTitle(customTitle);
       setGeneratedCustomText(customText);
@@ -259,7 +284,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [user, repos, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges]);
+  }, [user, repos, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage]);
 
   const copyEmbed = useCallback(async () => {
     if (!svgUrl || !embedCode) return;
@@ -289,7 +314,9 @@ export default function Home() {
       generatedShowTopics,
       generatedShowWatchers,
       generatedShowUpdated,
-      generatedShowBadges
+      generatedShowBadges,
+      generatedShowLangs,
+      generatedLangsPercentage
     );
     await navigator.clipboard.writeText(embed);
     setCopied(true);
@@ -314,7 +341,9 @@ export default function Home() {
     generatedShowTopics,
     generatedShowWatchers,
     generatedShowUpdated,
-    generatedShowBadges
+    generatedShowBadges,
+    generatedShowLangs,
+    generatedLangsPercentage
   ]);
 
   return (
@@ -571,6 +600,24 @@ export default function Home() {
               />
               Show Repo Badges (Archived, Fork, Template)
             </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={showLangs}
+                onChange={e => setShowLangs(e.target.checked)}
+              />
+              Show Languages Track
+            </label>
+            {showLangs && (
+              <label style={{ marginLeft: '12px', borderLeft: '2px solid #ccc', paddingLeft: '8px' }}>
+                <input
+                  type="checkbox"
+                  checked={langsPercentage}
+                  onChange={e => setLangsPercentage(e.target.checked)}
+                />
+                Show Language Percentages
+              </label>
+            )}
           </div>
         </div>
         <button className="btn" onClick={generate} disabled={loading}>
@@ -647,6 +694,8 @@ export default function Home() {
           <li><code>show_topics</code> — show repository topics/tags (<code>true</code> / <code>false</code>, default <code>false</code>)</li>
           <li><code>show_updated</code> — show last updated/pushed timestamp (<code>true</code> / <code>false</code>, default <code>false</code>)</li>
           <li><code>show_badges</code> — show repo status badges (archived, fork, template) (<code>true</code> / <code>false</code>, default <code>false</code>)</li>
+          <li><code>show_langs</code> — show dynamic multi-language visual track bar (<code>true</code> / <code>false</code>, default <code>false</code>)</li>
+          <li><code>langs_percentage</code> — show numerical percentages in the language track (<code>true</code> / <code>false</code>, default <code>false</code>)</li>
           <li><code>custom_bg</code> — custom background color or linear-gradient (e.g. <code>linear-gradient(#000, #30363d)</code>)</li>
           <li><code>custom_title</code> — custom repository title color (e.g. <code>#58a6ff</code>)</li>
           <li><code>custom_text</code> — custom text and icons color (e.g. <code>#8b949e</code>)</li>
