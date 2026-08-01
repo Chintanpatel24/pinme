@@ -21,6 +21,10 @@ Generate elegant SVG cards that look exactly like **GitHub pinned repositories**
 
 ---
 
+## Example at :[Pinme-Ex](https://github.com/Chintanpatel24/pinme-Ex)
+
+---
+
 ## Direct Usage
 - visit website to genrate yours - [Pinme](https://pinme-web.vercel.app)
   
