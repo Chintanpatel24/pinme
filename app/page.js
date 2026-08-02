@@ -8,23 +8,38 @@ function getRepoList(value) {
   return value.split(',').map(repo => repo.trim()).filter(Boolean).slice(0, 6);
 }
 
-function getCardUrl(user, repo, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage) {
+function getCardUrl(user, repo, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage, detailed) {
   const params = new URLSearchParams({ user, repo });
+  if (detailed) params.set('detailed', 'true');
   if (border) params.set('border', 'true');
   if (theme && theme !== 'light') params.set('theme', theme);
   if (!showStats) params.set('stats', 'false');
-  if (width && width !== '340') params.set('width', width);
-  const defaultHeight = showLangs ? '140' : '112';
+
+  const defaultWidth = detailed ? '460' : '340';
+  if (width && width !== defaultWidth) params.set('width', width);
+
+  const defaultHeight = detailed ? '180' : (showLangs ? '140' : '112');
   if (height && height !== defaultHeight) params.set('height', height);
+
   if (rx && rx !== '6') params.set('rx', rx);
-  if (showSize) params.set('show_size', 'true');
-  if (showLicense) params.set('show_license', 'true');
+
+  // In detailed mode, languages, topics, size, and license are true by default. Only set them if they are false.
+  if (detailed) {
+    if (!showLangs) params.set('show_langs', 'false');
+    if (!showTopics) params.set('show_topics', 'false');
+    if (!showSize) params.set('show_size', 'false');
+    if (!showLicense) params.set('show_license', 'false');
+  } else {
+    if (showLangs) params.set('show_langs', 'true');
+    if (showTopics) params.set('show_topics', 'true');
+    if (showSize) params.set('show_size', 'true');
+    if (showLicense) params.set('show_license', 'true');
+  }
+
   if (showIssues) params.set('show_issues', 'true');
-  if (showTopics) params.set('show_topics', 'true');
   if (showWatchers) params.set('show_watchers', 'true');
   if (showUpdated) params.set('show_updated', 'true');
   if (showBadges) params.set('show_badges', 'true');
-  if (showLangs) params.set('show_langs', 'true');
   if (langsPercentage) params.set('langs_percentage', 'true');
   if (customBg) params.set('custom_bg', customBg);
   if (customTitle) params.set('custom_title', customTitle);
@@ -32,7 +47,7 @@ function getCardUrl(user, repo, border, theme, showStats, width, height, rx, col
   return `${API_BASE}/api/pin?${params.toString()}`;
 }
 
-function getGridUrl(user, repos, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage) {
+function getGridUrl(user, repos, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage, detailed) {
   const params = new URLSearchParams({ user });
   if (repos.length === 1) {
     params.set('repo', repos[0]);
@@ -40,21 +55,36 @@ function getGridUrl(user, repos, border, theme, showStats, width, height, rx, co
     params.set('repos', repos.join(','));
     params.set('cols', cols || '2');
   }
+  if (detailed) params.set('detailed', 'true');
   if (border) params.set('border', 'true');
   if (theme && theme !== 'light') params.set('theme', theme);
   if (!showStats) params.set('stats', 'false');
-  if (width && width !== '340') params.set('width', width);
-  const defaultHeight = showLangs ? '140' : '112';
+
+  const defaultWidth = detailed ? '460' : '340';
+  if (width && width !== defaultWidth) params.set('width', width);
+
+  const defaultHeight = detailed ? '180' : (showLangs ? '140' : '112');
   if (height && height !== defaultHeight) params.set('height', height);
+
   if (rx && rx !== '6') params.set('rx', rx);
-  if (showSize) params.set('show_size', 'true');
-  if (showLicense) params.set('show_license', 'true');
+
+  // In detailed mode, languages, topics, size, and license are true by default. Only set them if they are false.
+  if (detailed) {
+    if (!showLangs) params.set('show_langs', 'false');
+    if (!showTopics) params.set('show_topics', 'false');
+    if (!showSize) params.set('show_size', 'false');
+    if (!showLicense) params.set('show_license', 'false');
+  } else {
+    if (showLangs) params.set('show_langs', 'true');
+    if (showTopics) params.set('show_topics', 'true');
+    if (showSize) params.set('show_size', 'true');
+    if (showLicense) params.set('show_license', 'true');
+  }
+
   if (showIssues) params.set('show_issues', 'true');
-  if (showTopics) params.set('show_topics', 'true');
   if (showWatchers) params.set('show_watchers', 'true');
   if (showUpdated) params.set('show_updated', 'true');
   if (showBadges) params.set('show_badges', 'true');
-  if (showLangs) params.set('show_langs', 'true');
   if (langsPercentage) params.set('langs_percentage', 'true');
   if (customBg) params.set('custom_bg', customBg);
   if (customTitle) params.set('custom_title', customTitle);
@@ -62,7 +92,7 @@ function getGridUrl(user, repos, border, theme, showStats, width, height, rx, co
   return `${API_BASE}/api/pin?${params.toString()}`;
 }
 
-function getHtmlEmbed(user, repos, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage) {
+function getHtmlEmbed(user, repos, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage, detailed) {
   if (!user || repos.length === 0) return '';
 
   if (repos.length === 1) {
@@ -70,7 +100,7 @@ function getHtmlEmbed(user, repos, border, theme, showStats, width, height, rx, 
     const fullHref = repo.includes('/') ? `https://github.com/${repo}` : `https://github.com/${user}/${repo}`;
     const altText = repo.includes('/') ? repo : `${user}/${repo}`;
     return `<a href="${fullHref}">
-  <img src="${getCardUrl(user, repo, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage)}" alt="${altText}" />
+  <img src="${getCardUrl(user, repo, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage, detailed)}" alt="${altText}" />
 </a>`;
   }
 
@@ -82,7 +112,7 @@ function getHtmlEmbed(user, repos, border, theme, showStats, width, height, rx, 
       const altText = repo.includes('/') ? repo : `${user}/${repo}`;
       return `    <td>
       <a href="${fullHref}">
-        <img src="${getCardUrl(user, repo, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage)}" alt="${altText}" />
+        <img src="${getCardUrl(user, repo, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage, detailed)}" alt="${altText}" />
       </a>
     </td>`;
     });
@@ -94,13 +124,13 @@ ${rows.join('\n')}
 </table>`;
 }
 
-function getMarkdownEmbed(user, repos, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage) {
+function getMarkdownEmbed(user, repos, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage, detailed) {
   if (!user || repos.length === 0) return '';
 
   const imageLink = repo => {
     const fullHref = repo.includes('/') ? `https://github.com/${repo}` : `https://github.com/${user}/${repo}`;
     const altText = repo.includes('/') ? repo : `${user}/${repo}`;
-    return `[![${altText}](${getCardUrl(user, repo, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage)})](${fullHref})`;
+    return `[![${altText}](${getCardUrl(user, repo, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage, detailed)})](${fullHref})`;
   };
   if (repos.length === 1) return imageLink(repos[0]);
 
@@ -142,6 +172,7 @@ export default function Home() {
   const [showBadges, setShowBadges] = useState(false);
   const [showLangs, setShowLangs] = useState(false);
   const [langsPercentage, setLangsPercentage] = useState(false);
+  const [detailed, setDetailed] = useState(false);
 
   const [customBg, setCustomBg] = useState('');
   const [customTitle, setCustomTitle] = useState('');
@@ -165,6 +196,7 @@ export default function Home() {
   const [generatedShowBadges, setGeneratedShowBadges] = useState(false);
   const [generatedShowLangs, setGeneratedShowLangs] = useState(false);
   const [generatedLangsPercentage, setGeneratedLangsPercentage] = useState(false);
+  const [generatedDetailed, setGeneratedDetailed] = useState(false);
 
   const [generatedCustomBg, setGeneratedCustomBg] = useState('');
   const [generatedCustomTitle, setGeneratedCustomTitle] = useState('');
@@ -197,14 +229,36 @@ export default function Home() {
     document.documentElement.setAttribute('data-theme', nextTheme);
   }, [siteTheme]);
 
-  // Automatically adjust default height state when languages track is toggled
-  useEffect(() => {
-    if (showLangs && height === '112') {
-      setHeight('140');
-    } else if (!showLangs && height === '140') {
+  // Adjust options/dimensions on Layout Mode switches
+  const handleDetailedSwitch = useCallback((isDetailed) => {
+    setDetailed(isDetailed);
+    if (isDetailed) {
+      setWidth('460');
+      setHeight('180');
+      setShowLangs(true);
+      setShowTopics(true);
+      setShowSize(true);
+      setShowLicense(true);
+    } else {
+      setWidth('340');
       setHeight('112');
+      setShowLangs(false);
+      setShowTopics(false);
+      setShowSize(false);
+      setShowLicense(false);
     }
-  }, [showLangs, height]);
+  }, []);
+
+  // Automatically adjust default height state when languages track is toggled in standard mode
+  useEffect(() => {
+    if (!detailed) {
+      if (showLangs && height === '112') {
+        setHeight('140');
+      } else if (!showLangs && height === '140') {
+        setHeight('112');
+      }
+    }
+  }, [showLangs, height, detailed]);
 
   const trimmedUser = generatedUser.trim();
   const repoList = getRepoList(generatedRepos);
@@ -229,7 +283,8 @@ export default function Home() {
     generatedShowUpdated,
     generatedShowBadges,
     generatedShowLangs,
-    generatedLangsPercentage
+    generatedLangsPercentage,
+    generatedDetailed
   );
 
   const generate = useCallback(async () => {
@@ -272,7 +327,8 @@ export default function Home() {
         showUpdated,
         showBadges,
         showLangs,
-        langsPercentage
+        langsPercentage,
+        detailed
       );
       const res = await fetch(url);
       if (!res.ok) {
@@ -298,6 +354,7 @@ export default function Home() {
       setGeneratedShowBadges(showBadges);
       setGeneratedShowLangs(showLangs);
       setGeneratedLangsPercentage(langsPercentage);
+      setGeneratedDetailed(detailed);
       setGeneratedCustomBg(customBg);
       setGeneratedCustomTitle(customTitle);
       setGeneratedCustomText(customText);
@@ -306,7 +363,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [user, repos, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage]);
+  }, [user, repos, border, theme, showStats, width, height, rx, cols, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage, detailed]);
 
   const copyEmbed = useCallback(async () => {
     if (!svgUrl || !embedCode) return;
@@ -338,7 +395,8 @@ export default function Home() {
       generatedShowUpdated,
       generatedShowBadges,
       generatedShowLangs,
-      generatedLangsPercentage
+      generatedLangsPercentage,
+      generatedDetailed
     );
     await navigator.clipboard.writeText(embed);
     setCopied(true);
@@ -365,7 +423,8 @@ export default function Home() {
     generatedShowUpdated,
     generatedShowBadges,
     generatedShowLangs,
-    generatedLangsPercentage
+    generatedLangsPercentage,
+    generatedDetailed
   ]);
 
   return (
@@ -427,6 +486,31 @@ export default function Home() {
           />
           <div className="hint">Separate multiple repos with commas. Supports full paths like owner/repo. Max 6.</div>
         </div>
+
+        <div className="form-group">
+          <label>Layout Mode</label>
+          <div className="style-options">
+            <label>
+              <input
+                type="radio"
+                name="layoutMode"
+                checked={!detailed}
+                onChange={() => handleDetailedSwitch(false)}
+              />
+              Standard (Compact GitHub Pinned Style)
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="layoutMode"
+                checked={detailed}
+                onChange={() => handleDetailedSwitch(true)}
+              />
+              Detailed (Spacious, Large, Full Description, More Languages & Topics)
+            </label>
+          </div>
+        </div>
+
         <div className="form-group">
           <label>Card Style</label>
           <div className="style-options">
@@ -519,7 +603,7 @@ export default function Home() {
               id="height"
               type="number"
               min="70"
-              max="400"
+              max="500"
               value={height}
               onChange={e => setHeight(e.target.value)}
               placeholder="112"
@@ -729,21 +813,22 @@ export default function Home() {
 
         <p style={{ marginTop: 16 }}><strong>Optional parameters:</strong></p>
         <ul>
+          <li><code>detailed</code> — enable larger, spacious layout with complete descriptions (<code>true</code> / <code>false</code>)</li>
           <li><code>cols</code> — number of columns (default: 2, max: 6)</li>
           <li><code>border</code> — enable left vertical colored border (<code>true</code>)</li>
           <li><code>theme</code> — <code>light</code>, <code>dark</code>, <code>black</code>, <code>transparent</code>, or <code>transparent-light</code></li>
           <li><code>stats</code> — show/hide stars and forks (set to <code>false</code> to hide, default <code>true</code>)</li>
-          <li><code>width</code> — custom card width in pixels (min: 200, max: 1000, default: 340)</li>
-          <li><code>height</code> — custom card height in pixels (min: 70, max: 400, default: 112)</li>
+          <li><code>width</code> — custom card width in pixels (min: 200, max: 1000, default: 340, detailed default: 460)</li>
+          <li><code>height</code> — custom card height in pixels (min: 70, max: 500, default: 112, detailed default: 180)</li>
           <li><code>rx</code> — border radius (0 to 40, default: 6)</li>
-          <li><code>show_size</code> — show repository size (<code>true</code> / <code>false</code>, default <code>false</code>)</li>
-          <li><code>show_license</code> — show license info (<code>true</code> / <code>false</code>, default <code>false</code>)</li>
+          <li><code>show_size</code> — show repository size (<code>true</code> / <code>false</code>, default <code>false</code>, detailed default <code>true</code>)</li>
+          <li><code>show_license</code> — show license info (<code>true</code> / <code>false</code>, default <code>false</code>, detailed default <code>true</code>)</li>
           <li><code>show_issues</code> — show open issues count (<code>true</code> / <code>false</code>, default <code>false</code>)</li>
           <li><code>show_watchers</code> — show watchers/subscribers count (<code>true</code> / <code>false</code>, default <code>false</code>)</li>
-          <li><code>show_topics</code> — show repository topics/tags (<code>true</code> / <code>false</code>, default <code>false</code>)</li>
+          <li><code>show_topics</code> — show repository topics/tags (<code>true</code> / <code>false</code>, default <code>false</code>, detailed default <code>true</code>)</li>
           <li><code>show_updated</code> — show last updated/pushed timestamp (<code>true</code> / <code>false</code>, default <code>false</code>)</li>
           <li><code>show_badges</code> — show repo status badges (archived, fork, template) (<code>true</code> / <code>false</code>, default <code>false</code>)</li>
-          <li><code>show_langs</code> — show dynamic multi-language visual track bar (<code>true</code> / <code>false</code>, default <code>false</code>)</li>
+          <li><code>show_langs</code> — show dynamic multi-language visual track bar (<code>true</code> / <code>false</code>, default <code>false</code>, detailed default <code>true</code>)</li>
           <li><code>langs_percentage</code> — show numerical percentages in the language track (<code>true</code> / <code>false</code>, default <code>false</code>)</li>
           <li><code>custom_bg</code> — custom background color or linear-gradient (e.g. <code>linear-gradient(#000, #30363d)</code>)</li>
           <li><code>custom_title</code> — custom repository title color (e.g. <code>#58a6ff</code>)</li>
