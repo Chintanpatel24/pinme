@@ -14,24 +14,38 @@ export async function GET(request) {
   const requestedCols = parseInt(searchParams.get('cols') || '2', 10);
   const cols = Number.isNaN(requestedCols) ? 2 : requestedCols;
 
-  const widthVal = parseInt(searchParams.get('width') || '340', 10);
-  const width = Number.isNaN(widthVal) ? 340 : widthVal;
+  const detailed = searchParams.get('detailed') === 'true';
 
-  const showLangs = searchParams.get('show_langs') === 'true';
+  // In detailed mode, if no custom width is explicitly specified, default to 460. Otherwise default to 340.
+  const defaultWidth = detailed ? 460 : 340;
+  const widthVal = parseInt(searchParams.get('width') || String(defaultWidth), 10);
+  const width = Number.isNaN(widthVal) ? defaultWidth : widthVal;
+
+  // In detailed mode, we enable these options by default: show_langs, show_topics, show_size, show_license.
+  // The user can still override them by passing explicit parameters if desired.
+  const showLangsVal = searchParams.get('show_langs');
+  const showLangs = showLangsVal !== null ? showLangsVal === 'true' : (detailed ? true : false);
+
+  const showTopicsVal = searchParams.get('show_topics');
+  const showTopics = showTopicsVal !== null ? showTopicsVal === 'true' : (detailed ? true : false);
+
+  const showSizeVal = searchParams.get('show_size');
+  const showSize = showSizeVal !== null ? showSizeVal === 'true' : (detailed ? true : false);
+
+  const showLicenseVal = searchParams.get('show_license');
+  const showLicense = showLicenseVal !== null ? showLicenseVal === 'true' : (detailed ? true : false);
+
   const langsPercentage = searchParams.get('langs_percentage') === 'true';
 
-  // Automatically increase height if languages track is shown and height is not explicitly custom.
-  const defaultHeight = showLangs ? 140 : 112;
+  // In detailed mode, default height is 180. Standard mode defaults to 140 if showLangs is active, otherwise 112.
+  const defaultHeight = detailed ? 180 : (showLangs ? 140 : 112);
   const heightVal = parseInt(searchParams.get('height') || String(defaultHeight), 10);
   const height = Number.isNaN(heightVal) ? defaultHeight : heightVal;
 
   const rxVal = parseInt(searchParams.get('rx') || '6', 10);
   const rx = Number.isNaN(rxVal) ? 6 : rxVal;
 
-  const showSize = searchParams.get('show_size') === 'true';
-  const showLicense = searchParams.get('show_license') === 'true';
   const showIssues = searchParams.get('show_issues') === 'true';
-  const showTopics = searchParams.get('show_topics') === 'true';
   const showWatchers = searchParams.get('show_watchers') === 'true';
   const showUpdated = searchParams.get('show_updated') === 'true';
   const showBadges = searchParams.get('show_badges') === 'true';
@@ -53,7 +67,7 @@ export async function GET(request) {
     if (repo) {
       const fullRepoName = repo.includes('/') ? repo : `${user}/${repo}`;
       const data = await getRepoData(fullRepoName, showLangs);
-      const svg = generateSingleSVG(data, border, theme, showStats, width, height, rx, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage);
+      const svg = generateSingleSVG(data, border, theme, showStats, width, height, rx, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage, detailed);
       return new Response(svg, {
         headers: {
           'Content-Type': 'image/svg+xml',
@@ -86,7 +100,7 @@ export async function GET(request) {
       }
 
       const { repos: data } = await getMultipleRepos(repoList, showLangs);
-      const svg = generateGridSVG(data.slice(0, 6), cols, border, theme, showStats, width, height, rx, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage);
+      const svg = generateGridSVG(data.slice(0, 6), cols, border, theme, showStats, width, height, rx, showSize, showLicense, showIssues, customBg, customTitle, customText, showTopics, showWatchers, showUpdated, showBadges, showLangs, langsPercentage, detailed);
       return new Response(svg, {
         headers: {
           'Content-Type': 'image/svg+xml',
