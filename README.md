@@ -21,6 +21,8 @@ Generate elegant SVG cards that look exactly like **GitHub pinned repositories**
 
 ---
 
+<img width="1025" height="452" alt="pinme" src="https://github.com/user-attachments/assets/5d03bc30-f667-4c2c-9c40-c0dacb4a68b8" />
+
 ## Example at :[Pinme-Ex](https://github.com/Chintanpatel24/pinme-Ex)
 
 ---
